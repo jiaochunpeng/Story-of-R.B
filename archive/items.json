@@ -1,0 +1,19 @@
+{
+    "1:1,1":{},
+    "1:2,2":{
+        "items":{
+            "shirt":{
+                "description":"a very common shirt"
+            },
+            "pant":{
+                "description":"a very common pant"
+            },
+            "knife":{
+                "description":"a very common knife. Not sure can fight anything."
+            }
+        },
+        "NPC":[],
+        "monsters":[],
+        "events":[]
+        }
+}
