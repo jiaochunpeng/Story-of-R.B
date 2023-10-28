@@ -4,36 +4,18 @@ import adventurelib as adv
 import random
 import os
 import utils
-import sqlite3
+import player
 
-CURR_PLAYER=None  #json object
-CURR_CITY=None    #json object  
+
+CURR_PLAYER=None  #player name
+CURR_CITY=None    #city name  
 CURR_CELL=None    #x,x
 CURR_ZONE=None    #int from 1 to 12
 
 previous_context=None
 current_context=None
-
-def get_players():
-    with open('players.json') as f:
-        players = json.load(f)
-        return players['players'].keys()
-    
-def load_player(player:str) -> json:
-    found={}
-    with open('players.json') as f:
-        players = json.load(f)
-        found[player]=players['players'][player]
-        return found
-
-def update_player(player :str,attribute : str,value):
-    with open('players.json',"w") as f:
-        players=json.load(f)
-        players[player][attribute]=value
-        json.dump(players,f)
-
         
-def load_city(city:str) -> json:
+def load_city(city:str) :
     #load places
     with open('places.json') as f:
         world = json.load(f)
@@ -50,17 +32,17 @@ def main():
     
     #choose player
     print("choose the player:")
-    players=get_players()
+    players=player.get_players()
     print(",".join(players))
     while True:
         user_input=input()
         if user_input in players:
-            CURR_PLAYER=load_player(user_input)
+            CURR_PLAYER=user_input
             break
     
     #load player infor
-    player_infor=next(iter(CURR_PLAYER.values()))
-    city=player_infor['current city']
+    player_info=player.load_player(CURR_PLAYER)
+    CURR_CITY=player_info[0]['current_city']
     CURR_CITY= load_city(city)[city]
     CURR_CELL=player_infor['current cell']
     CURR_ZONE=1 #need to fix

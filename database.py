@@ -4,10 +4,17 @@ GAME_DB="db\game.db"
 
 
 db_conn =sqlite3.connect(GAME_DB)
+db_conn.row_factory = sqlite3.Row
 
-def _execute(sql):
+def execute(sql):
     cur=db_conn.cursor()
     cur.execute(sql)
     cur.commit()
 
+def execute_query(sql):
+    cur=db_conn.cursor()
+    res = cur.execute(sql)
+    result=res.fetchall()
+    cur.close()
+    return result
     
