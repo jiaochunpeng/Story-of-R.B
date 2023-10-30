@@ -16,7 +16,6 @@ def execute(sql):
     except:
         return False
     
-
 def execute_query(sql):
     cur=db_conn.cursor()
     res = cur.execute(sql)

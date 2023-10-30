@@ -7,6 +7,7 @@ import utils
 import player
 import places
 import items
+import NPC
 
 
 CURR_PLAYER=None  #player name
@@ -130,6 +131,12 @@ def look():
         adv.say(f"You find {','.join(available_items)}.")
     else:
         adv.say('Nothing around.')
+    
+    available_npc= NPC.get_NPCs(CURR_ZONE,CURR_CELL)
+    if len(available_npc)>0: 
+        adv.say(f"{','.join(available_npc)} are here.")
+    else:
+        adv.say('No one is around.')
 
 @adv.when('inventory')
 @adv.when('i')
@@ -140,10 +147,11 @@ def inv():
     else:
         adv.say('You have nothing.')
 
+@adv.when('talk to NPC')
+def talk(npc):
+    npc_infor=NPC.load_npc(npc)[0]
+    adv.say(npc_infor['greetings'])
 
-def check_NPC(cell):
-    pass
-    
 def check_monsters(cell):
     pass
 
