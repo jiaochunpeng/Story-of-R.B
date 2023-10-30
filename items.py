@@ -1,7 +1,7 @@
 import database as db
 
 def get_items(zone,cell):
-    result=db.execute_query(f"select item_name from items where cell='{cell}'")
+    result=db.execute_query(f"select item_name from items where zone={zone} and cell='{cell}'")
     return [x[0] for x in result ]
     
 def add_item(zone,cell,item):
