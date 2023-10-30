@@ -9,7 +9,13 @@ db_conn.row_factory = sqlite3.Row
 def execute(sql):
     cur=db_conn.cursor()
     cur.execute(sql)
-    cur.commit()
+    try:
+        cur.commit()
+        cur.close()
+        return True
+    except:
+        return False
+    
 
 def execute_query(sql):
     cur=db_conn.cursor()

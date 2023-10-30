@@ -5,6 +5,8 @@ import random
 import os
 import utils
 import player
+import places
+import items
 
 
 CURR_PLAYER=None  #player name
@@ -14,16 +16,12 @@ CURR_ZONE=None    #int from 1 to 12
 
 previous_context=None
 current_context=None
+player_info=None
+city_info=None
         
-def load_city(city:str) :
-    #load places
-    with open('places.json') as f:
-        world = json.load(f)
-        city=utils._json_search_key(world,city)
-        return city
-    
+   
 def prompt():
-    return f'{CURR_CITY["aliases"]}:{CURR_CELL} > '
+    return f'{CURR_CITY}:{CURR_CELL} > '
 
 def main():
     global CURR_PLAYER,CURR_CITY,CURR_CELL,CURR_ZONE
@@ -41,23 +39,25 @@ def main():
             break
     
     #load player infor
-    player_info=player.load_player(CURR_PLAYER)
-    CURR_CITY=player_info[0]['current_city']
-    CURR_CITY= load_city(city)[city]
-    CURR_CELL=player_infor['current cell']
-    CURR_ZONE=1 #need to fix
+    player_info=player.load_player(CURR_PLAYER)[0]
+    CURR_CITY=player_info['current_city']
+    city_info=places.load_place(CURR_CITY)[0]
+    CURR_CELL=player_info['current_cell']
+    CURR_ZONE=city_info['zone']
      
     adv.prompt = prompt
 
     #Active the robot. Just once. 
-    if player_infor['puzzles pass']:
-        if puzzles.game_passcode():
+    flags=player_info['flags'].split(',')
+    if flags[0]=='1':
+        if True or puzzles.game_passcode():
             adv.say(f"""Experiment {random.randint(1000000,9000000)} activated!
                 Me Jo is your assistant and will server you 24/7 for free.
                 Say help to get the command you can use.
                 Say jo to ask me some questions.""")
             #set puzzles to false so that no more play.
-            update_player(next(iter(CURR_PLAYER.keys())),"puzzles pass",False)
+            flags[0]='0'
+            player.update_player(CURR_PLAYER,'flags',','.join(flags))
     adv.start()
     
 @adv.when('jo')
@@ -115,24 +115,31 @@ def move(direction):
             if y<1: y-=1
     CURR_CELL=str(x)+','+str(y)
 
-    items= check_items(CURR_CELL)
-    if items: 
-        adv.say(f"You find {','.join(items)}.")
     #check_NPC(CURR_CELL)
     #check_monsters(CURR_CELL)
     #check_events(CURR_CELL)
-
-def check_items(cell):
-    with open('items.json') as f:
-        items = json.load(f)
-        loc=str(CURR_ZONE)+':'+CURR_CELL
-        if loc in items.keys():
-            return list(items[loc]['items'].keys())
-
 @adv.when("take ITEM")
 def take(item):
-    items=item+'.'+next(iter(CURR_PLAYER.values()))["items"]
-    update_player(player,"items",items)
+    player.add_to_inventory(CURR_PLAYER, item,1)
+    items.remove_item(CURR_ZONE,CURR_CELL,item)
+
+@adv.when("look")
+def look():
+    available_items= items.get_items(CURR_ZONE,CURR_CELL)
+    if len(available_items)>0: 
+        adv.say(f"You find {','.join(available_items)}.")
+    else:
+        adv.say('Nothing around.')
+
+@adv.when('inventory')
+@adv.when('i')
+def inv():
+    inv=player.get_inventory(CURR_PLAYER)
+    if len(inv)>0:
+        adv.say(f"you have {','.join(inv)}")
+    else:
+        adv.say('You have nothing.')
+
 
 def check_NPC(cell):
     pass
