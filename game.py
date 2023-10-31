@@ -8,14 +8,13 @@ import player
 import places
 import items
 import NPC
-from const import *
+import global_vars as gv
 
   
 def prompt():
-    return f'{CURR_CITY}:{CURR_CELL} > '
+    return f'{gv.curr_city}:{gv.curr_cell} > '
 
 def main():
-    global CURR_PLAYER,CURR_CITY,CURR_CELL,CURR_ZONE
 
     os.system('cls||clear')
     
@@ -26,20 +25,20 @@ def main():
     while True:
         user_input=input()
         if user_input in players:
-            CURR_PLAYER=user_input
+            gv.curr_player=user_input
             break
     
     #load player infor
-    player_info=player.load_player(CURR_PLAYER)[0]
-    CURR_CITY=player_info['current_city']
-    city_info=places.load_place(CURR_CITY)[0]
-    CURR_CELL=player_info['current_cell']
-    CURR_ZONE=city_info['zone']
+    gv.player_info=player.load_player(gv.curr_player)[0]
+    gv.curr_city=gv.player_info['current_city']
+    gv.city_info=places.load_place(gv.curr_city)[0]
+    gv.curr_cell=gv.player_info['current_cell']
+    gv.curr_zone=gv.city_info['zone']
      
     adv.prompt = prompt
 
     #Active the robot. Just once. 
-    flags=player_info['flags'].split(',')
+    flags=gv.player_info['flags'].split(',')
     if flags[0]=='1':
         if True or puzzles.game_passcode():
             adv.say(f"""Experiment {random.randint(1000000,9000000)} activated!
@@ -48,15 +47,14 @@ def main():
                 Say jo to ask me some questions.""")
             #set puzzles to false so that no more play.
             flags[0]='0'
-            player.update_player(CURR_PLAYER,'flags',','.join(flags))
+            player.update_player(gv.curr_player,'flags',','.join(flags))
     adv.start()
     
 @adv.when('jo')
 def activate_Jo():
-    global previous_context
-    previous_context=adv.get_context()
+    gv.previous_context=adv.get_context()
     
-    if CURR_PLAYER['puzzles number']:
+    if gv.player_info['puzzles number']:
         adv.say(""" Play a game before ask a question.""")
         if puzzles.game_guessnumber():
             adv.say("You good! Shot your questions.")
@@ -74,14 +72,14 @@ def questions(question):
         case 'yourname' | 'yourwho':
             adv.say('My name is Jo. You know already. Dumb.')
         case 'where':
-            adv.say(f'you are in {CURR_CITY["aliases"]},{CURR_CITY["description"]}')
+            adv.say(f'you are in {gv.curr_city["aliases"]},{gv.curr_city["description"]}')
         case 'name':
             adv.say('your name is Alice? I dont know')
         case 'whyhere':
             adv.say('why you ask why you here?')
         case 'bye':
             adv.say('%&^(#$&)!')
-            adv.set_context(previous_context)
+            adv.set_context(gv.previous_context)
 
 @adv.when('right',direction='right')
 @adv.when('r',direction='right')
@@ -92,9 +90,8 @@ def questions(question):
 @adv.when('down',direction='down')
 @adv.when('d',direction='down')
 def move(direction):
-    global CURR_CELL
-    x=int(CURR_CELL.split(',')[0])
-    y=int(CURR_CELL.split(',')[1])
+    x=int(gv.curr_cell.split(',')[0])
+    y=int(gv.curr_cell.split(',')[1])
     match direction:
         case "right" | "r":  
             if x<10:  x+=1
@@ -104,25 +101,25 @@ def move(direction):
             if y<10: y+=1
         case "down" | "d": 
             if y>1: y-=1
-    CURR_CELL=str(x)+','+str(y)
+    gv.curr_cell=str(x)+','+str(y)
 
-    #check_NPC(CURR_CELL)
-    #check_monsters(CURR_CELL)
-    #check_events(CURR_CELL)
+    #check_NPC(curr_cell)
+    #check_monsters(curr_cell)
+    #check_events(curr_cell)
 @adv.when("take ITEM")
 def take(item):
-    player.add_to_inventory(CURR_PLAYER, item,1)
-    items.remove_item(CURR_ZONE,CURR_CELL,item)
+    player.add_to_inventory(gv.curr_player, item,1)
+    items.remove_item(gv.curr_zone,gv.curr_cell,item)
 
 @adv.when("look")
 def look():
-    available_items= items.get_items(CURR_ZONE,CURR_CELL)
+    available_items= items.get_items(gv.curr_zone,gv.curr_cell)
     if len(available_items)>0: 
         adv.say(f"You find {','.join(available_items)}.")
     else:
         adv.say('Nothing around.')
     
-    available_npc= NPC.get_NPCs(CURR_ZONE,CURR_CELL)
+    available_npc= NPC.get_NPCs(gv.curr_zone,gv.curr_cell)
     if len(available_npc)>0: 
         adv.say(f"{','.join(available_npc)} are here.")
     else:
@@ -131,7 +128,7 @@ def look():
 @adv.when('inventory')
 @adv.when('i')
 def inv():
-    inv=player.get_inventory(CURR_PLAYER)
+    inv=player.get_inventory(gv.urr_player)
     if len(inv)>0:
         adv.say(f"you have {','.join(inv)}")
     else:
@@ -139,15 +136,14 @@ def inv():
 
 @adv.when('talk to NPC')
 def talk(npc):
-    global CURR_PLAYER,CURR_CITY,CURR_CELL,CURR_ZONE
     if not NPC.has_active_request(npc):
         npc_infor=NPC.load_npc(npc)[0]
         adv.say(npc_infor['greetings'])
     else:
         import RB001
-        #script_file=NPC.get_active_request_scripts(npc)
-        #with open(script_file) as f:
-        #    exec(f.read())
+        # script_file=NPC.get_active_request_scripts(npc)
+        # with open(script_file) as f:
+        #     exec(f.read())
 
 def check_monsters(cell):
     pass
