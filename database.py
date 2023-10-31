@@ -3,23 +3,26 @@ import sqlite3
 GAME_DB="db\game.db"
 
 
-db_conn =sqlite3.connect(GAME_DB)
-db_conn.row_factory = sqlite3.Row
+def connect():
+    db_conn =sqlite3.connect(GAME_DB, isolation_level=None)
+    db_conn.row_factory = sqlite3.Row
+    cur=db_conn.cursor()
+    return db_conn,cur
 
 def execute(sql):
-    cur=db_conn.cursor()
+    conn,cur=connect()
     cur.execute(sql)
     try:
-        cur.commit()
-        cur.close()
+        conn.commit()
+        conn.close()
         return True
     except:
         return False
     
 def execute_query(sql):
-    cur=db_conn.cursor()
+    conn,cur=connect()
     res = cur.execute(sql)
     result=res.fetchall()
-    cur.close()
+    conn.close()
     return result
     

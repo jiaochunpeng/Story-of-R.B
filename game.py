@@ -8,19 +8,9 @@ import player
 import places
 import items
 import NPC
+from const import *
 
-
-CURR_PLAYER=None  #player name
-CURR_CITY=None    #city name  
-CURR_CELL=None    #x,x
-CURR_ZONE=None    #int from 1 to 12
-
-previous_context=None
-current_context=None
-player_info=None
-city_info=None
-        
-   
+  
 def prompt():
     return f'{CURR_CITY}:{CURR_CELL} > '
 
@@ -113,7 +103,7 @@ def move(direction):
         case "up" | "u": 
             if y<10: y+=1
         case "down" | "d": 
-            if y<1: y-=1
+            if y>1: y-=1
     CURR_CELL=str(x)+','+str(y)
 
     #check_NPC(CURR_CELL)
@@ -149,8 +139,15 @@ def inv():
 
 @adv.when('talk to NPC')
 def talk(npc):
-    npc_infor=NPC.load_npc(npc)[0]
-    adv.say(npc_infor['greetings'])
+    global CURR_PLAYER,CURR_CITY,CURR_CELL,CURR_ZONE
+    if not NPC.has_active_request(npc):
+        npc_infor=NPC.load_npc(npc)[0]
+        adv.say(npc_infor['greetings'])
+    else:
+        import RB001
+        #script_file=NPC.get_active_request_scripts(npc)
+        #with open(script_file) as f:
+        #    exec(f.read())
 
 def check_monsters(cell):
     pass
@@ -159,3 +156,4 @@ def check_events(cell):
     pass
 
 main()
+
